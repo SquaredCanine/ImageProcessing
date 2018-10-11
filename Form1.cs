@@ -143,6 +143,7 @@ namespace INFOIBV
                 case "closing":
                     break;
                 case "complement":
+                    Image = conversionComplement(Image);
                     break;
                 case "and":
                     break;
