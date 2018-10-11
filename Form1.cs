@@ -206,6 +206,12 @@ namespace INFOIBV
             progressBar.Visible = false;                                    // Hide progress bar
         }
 
+        //Takes a greyscale image as input and returns its' complementary image
+        private Color[,] conversionComplement(Color[,] image)
+        {
+            return conversionNegative(image);
+        }
+
         //This function takes an image and outputs an image with the edge strength per pixel.
         private Color[,] conversionEdgeDetection(Color[,] image)
         {
