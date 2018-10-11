@@ -145,9 +145,9 @@ namespace INFOIBV
                 case "complement":
                     Image = conversionComplement(Image);
                     break;
-                case "and":
+                case "min":
                     break;
-                case "or":
+                case "max":
                     break;
                 case "value counting":
                     break;
@@ -211,6 +211,16 @@ namespace INFOIBV
         private Color[,] conversionComplement(Color[,] image)
         {
             return conversionNegative(image); //It's actually the same thing, whouzies
+        }
+
+        private Color[,] conversionMin(Color[,] image1, Color[,] image2)
+        {
+
+        }
+
+        private Color[,]converstionMax(Color[,] image1, Color[,] image2)
+        {
+
         }
 
         //This function takes an image and outputs an image with the edge strength per pixel.

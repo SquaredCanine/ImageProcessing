@@ -170,8 +170,8 @@
             "opening",
             "closing",
             "complement",
-            "and",
-            "or",
+            "min",
+            "max",
             "value counting",
             "boundary trace"});
             this.comboBox1.Location = new System.Drawing.Point(688, 17);
