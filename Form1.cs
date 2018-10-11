@@ -143,6 +143,7 @@ namespace INFOIBV
                 case "closing":
                     break;
                 case "complement":
+                    Image = conversionComplement(Image);
                     break;
                 case "and":
                     break;
@@ -204,6 +205,12 @@ namespace INFOIBV
             histoOut.ChartAreas[0].AxisY.Maximum = histoIn.ChartAreas[0].AxisY.Maximum;
 
             progressBar.Visible = false;                                    // Hide progress bar
+        }
+
+        //Takes a greyscale image as input and returns its' complementary image
+        private Color[,] conversionComplement(Color[,] image)
+        {
+            return conversionNegative(image); //It's actually the same thing, whouzies
         }
 
         //This function takes an image and outputs an image with the edge strength per pixel.
