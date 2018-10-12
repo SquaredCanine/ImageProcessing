@@ -209,7 +209,11 @@ namespace INFOIBV
 
             progressBar.Visible = false;                                    // Hide progress bar
         }
-
+        //Returns the fourier shape descriptor for a given set of points
+        private void createFourierDescriptor(Tuple<int, int>[] borderPoints)
+        {
+            return;
+        }
 
         //Retrieves a second image via file search
         private Color[,] getSecondImage()
@@ -218,7 +222,7 @@ namespace INFOIBV
             {
                 string file = openImageDialog.FileName;                     // Get the file name
                 Bitmap imgBmap = new Bitmap(file);                          // Create new Bitmap from file
-                Color[,] image = new Color[imgBmap.Size.Width,imgBmap.Size.Height];
+                Color[,] image = new Color[imgBmap.Size.Width, imgBmap.Size.Height];
                 for (int x = 0; x < imgBmap.Size.Width; x++)
                 {
                     for (int y = 0; y < imgBmap.Size.Height; y++)
@@ -235,7 +239,7 @@ namespace INFOIBV
                 return image;
             }
             return null;
-
+        }
         //Counts the amount of distinct values in a given image ;we assume that the image is a greyscale
         //Will count the amount of distinct green values when applied to a colored image
         private int countDistinctValues(Color[,] image)
