@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -101,15 +102,18 @@ namespace INFOIBV
             progressBar.Minimum = 1;
             progressBar.Maximum = InputImage.Size.Width * InputImage.Size.Height;
             progressBar.Value = 1;
-            progressBar.Step = 1;  
+            progressBar.Step = 1;
             //Reads the combobox to decide which conversion should be done on the input image.
+            Tuple<int, int>[] tupleList;
             switch (comboBox1.Text)
             {
                 case "erosion":
-                    Tuple<int, int>[] tupleList = convertInputToTuples();
+                    tupleList = convertInputToTuples();
                     Image = conversionErosion(Image, tupleList, isBinaryButton.Checked);
                     break;
                 case "dilation":
+                    tupleList = convertInputToTuples();
+                    Image = conversionDilation(Image, tupleList, isBinaryButton.Checked);
                     break;
                 case "opening":
                     break;
@@ -200,22 +204,191 @@ namespace INFOIBV
         {
             if (isBinary)
             {
-                return conversionErosionBinary(image);
+                return conversionErosionBinary(image, kernel);
             }
             else
             {
-                return conversionErosionGrayscale(image);
+                return conversionErosionGrayscale(image, kernel);
             }
         }
 
-        private Color[,] conversionErosionBinary(Color[,] image)
+        private Color[,] conversionDilation(Color[,]image, Tuple<int, int>[] kernel, Boolean isBinary)
         {
-            return image;
+            if (isBinary)
+            {
+                return conversionDilationBinary(image, kernel);
+            }
+            else
+            {
+                return conversionDilationGrayscale(image, kernel);
+            }
         }
 
-        private Color[,] conversionErosionGrayscale(Color[,] image)
+        private Color[,] makeBinaryImage()
         {
-            return image;
+            Color[,] newBinaryImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    newBinaryImage[x, y] = Color.Black;
+                }
+            }
+
+            return newBinaryImage;
+        }
+
+        private Color[,] conversionDilationBinary(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = makeBinaryImage();
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    if (image[x, y].R == 255)
+                    {
+                        for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                        {
+                            int structureX = x + kernel[structureIndex].Item1;
+                            int structureY = y + kernel[structureIndex].Item2;
+
+                            if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                              structureX > (InputImage.Size.Width - 1)))
+                            {
+                                newImage[structureX, structureY] = Color.FromArgb(255, 255, 255);
+                            }
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private Color[,] conversionErosionBinary(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = makeBinaryImage();
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    if (image[x, y].R == 255)
+                    {
+                        bool doesKernelFit = true;
+                        for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                        {
+                            int structureX = x + kernel[structureIndex].Item1;
+                            int structureY = y + kernel[structureIndex].Item2;
+
+                            if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                                  structureX > (InputImage.Size.Width - 1)))
+                            {
+                                doesKernelFit = doesKernelFit && image[structureX, structureY].R == 255;
+                            }
+
+                            if (!doesKernelFit)
+                            {
+                                break;
+                            }
+                        }
+                        if (doesKernelFit)
+                        {
+                            newImage[x, y] = Color.White;
+                        }
+                    }
+                }
+            }
+
+            return newImage;
+        }
+
+        private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                    {
+                        int structureX = x + kernel[structureIndex].Item1;
+                        int structureY = y + kernel[structureIndex].Item2;
+
+                        if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                            structureX > (InputImage.Size.Width - 1 )))
+                        {
+                            valueList.Add(image[structureX, structureY].R);
+                        }
+                    }
+
+                    int newColor = getMinimumValue(valueList);
+                    newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private Color[,] conversionDilationGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                    {
+                        int structureX = x + kernel[structureIndex].Item1;
+                        int structureY = y + kernel[structureIndex].Item2;
+
+                        if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                              structureX > (InputImage.Size.Width - 1)))
+                        {
+                            valueList.Add(image[structureX, structureY].R);
+                        }
+                    }
+
+                    int newColor = getMaximumValue(valueList);
+                    newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private int getMinimumValue(List<int> valueList)
+        {
+            int lowValue = 255;
+            foreach (int element in valueList)
+            {
+                if (element < lowValue)
+                {
+                    lowValue = element;
+                }
+            }
+
+            return lowValue;
+        }
+
+        private int getMaximumValue(List<int> valueList)
+        {
+            int highValue = 0;
+            foreach (int element in valueList)
+            {
+                if (element > highValue)
+                {
+                    highValue = element;
+                }
+            }
+
+            return highValue;
         }
 
         //Assignment 1 functionality
