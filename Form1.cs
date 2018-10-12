@@ -146,8 +146,10 @@ namespace INFOIBV
                     Image = conversionComplement(Image);
                     break;
                 case "min":
+                    Image = conversionMin(Image, getSecondImage());
                     break;
                 case "max":
+                    Image = conversionMax(Image, getSecondImage());
                     break;
                 case "value counting":
                     break;
@@ -207,6 +209,31 @@ namespace INFOIBV
             progressBar.Visible = false;                                    // Hide progress bar
         }
 
+        //Retrieves a second image via file search
+        private Color[,] getSecondImage()
+        {
+            if (openImageDialog.ShowDialog() == DialogResult.OK)             // Open File Dialog
+            {
+                string file = openImageDialog.FileName;                     // Get the file name
+                Bitmap imgBmap = new Bitmap(file);                          // Create new Bitmap from file
+                Color[,] image = new Color[imgBmap.Size.Width,imgBmap.Size.Height];
+                for (int x = 0; x < imgBmap.Size.Width; x++)
+                {
+                    for (int y = 0; y < imgBmap.Size.Height; y++)
+                    {
+                        image[x, y] = imgBmap.GetPixel(x, y);                // Set pixel color in array at (x,y)
+                    }
+                }
+                if (imgBmap.Size.Height <= 0 || imgBmap.Size.Width <= 0 ||
+                    imgBmap.Size.Height > 512 || imgBmap.Size.Width > 512)  // Dimension check
+                {
+                    MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                    return null;
+                }
+                return image;
+            }
+            return null;
+        }
         //Takes a greyscale image as input and returns its' complementary image
         private Color[,] conversionComplement(Color[,] image)
         {
@@ -235,7 +262,7 @@ namespace INFOIBV
             return output;
         }
 
-        private Color[,]converstionMax(Color[,] image1, Color[,] image2)
+        private Color[,]conversionMax(Color[,] image1, Color[,] image2)
         {
             if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
                 return null;
