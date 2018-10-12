@@ -120,12 +120,16 @@ namespace INFOIBV
                 case "closing":
                     break;
                 case "complement":
+                    Image = conversionComplement(Image);
                     break;
-                case "and":
+                case "min":
+                    Image = conversionMin(Image, getSecondImage());
                     break;
-                case "or":
+                case "max":
+                    Image = conversionMax(Image, getSecondImage());
                     break;
                 case "value counting":
+                    ValuesBox.Text = countDistinctValues(Image).ToString();
                     break;
                 case "boundary trace":
                     break;
@@ -308,11 +312,7 @@ namespace INFOIBV
         private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int>[] kernel)
         {
             Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
-            for (int x = 0; x < InputImage.Size.Width; x++)
-            {
-                for (int y = 0; y < InputImage.Size.Height; y++)
-                {
-                    List<int> valueList = new List<int>();
+                                List<int> valueList = new List<int>();
                     for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
                     {
                         int structureX = x + kernel[structureIndex].Item1;
@@ -390,8 +390,105 @@ namespace INFOIBV
 
             return highValue;
         }
+        //Retrieves a second image via file search
+        private Color[,] getSecondImage()
+        {
+            if (openImageDialog.ShowDialog() == DialogResult.OK)             // Open File Dialog
+            {
+                string file = openImageDialog.FileName;                     // Get the file name
+                Bitmap imgBmap = new Bitmap(file);                          // Create new Bitmap from file
+                Color[,] image = new Color[imgBmap.Size.Width,imgBmap.Size.Height];
+                for (int x = 0; x < imgBmap.Size.Width; x++)
+                {
+                    for (int y = 0; y < imgBmap.Size.Height; y++)
+                    {
+                        image[x, y] = imgBmap.GetPixel(x, y);                // Set pixel color in array at (x,y)
+                    }
+                }
+                if (imgBmap.Size.Height <= 0 || imgBmap.Size.Width <= 0 ||
+                    imgBmap.Size.Height > 512 || imgBmap.Size.Width > 512)  // Dimension check
+                {
+                    MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                    return null;
+                }
+                return image;
+            }
+            return null;
 
-        //Assignment 1 functionality
+        //Counts the amount of distinct values in a given image ;we assume that the image is a greyscale
+        //Will count the amount of distinct green values when applied to a colored image
+        private int countDistinctValues(Color[,] image)
+        {
+            int[] valuesArray = new int[256];
+            int amount = 0;
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    Color pixelColor = image[x, y];                         // Get the pixel color at coordinate (x,y)
+                    valuesArray[pixelColor.G]++;                            // Increment counting array in colors position
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            foreach(int i in valuesArray)                                   // Count values bigger than zero
+            {
+                if (i > 0)
+                    amount++;
+            }
+            return amount;
+
+        }
+        //Takes a greyscale image as input and returns its' complementary image
+        private Color[,] conversionComplement(Color[,] image)
+        {
+            return conversionNegative(image); //It's actually the same thing, whouzies
+        }
+
+        private Color[,] conversionMin(Color[,] image1, Color[,] image2)
+        {
+            if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+                return null;
+            Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
+
+            for (int x = 0; x < image1.GetLength(0); x++)
+            {
+                for (int y = 0; y < image1.GetLength(1); y++)
+                {
+                    Color pixelColor1 = image1[x, y];                         // Get the pixel color at coordinate (x,y)
+                    Color pixelColor2 = image2[x, y];
+                    Color updatedColor = Color.FromArgb(Math.Min(pixelColor1.R, pixelColor2.R),
+                        Math.Min(pixelColor1.G, pixelColor2.G), Math.Min(pixelColor1.B, pixelColor2.B)); //Min valued image
+                    output[x, y] = updatedColor;                             // Set the new pixel color at coordinate (x,y)
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            return output;
+        }
+
+        private Color[,]conversionMax(Color[,] image1, Color[,] image2)
+        {
+            if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+                return null;
+            Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
+
+            for (int x = 0; x < image1.GetLength(0); x++)
+            {
+                for (int y = 0; y < image1.GetLength(1); y++)
+                {
+                    Color pixelColor1 = image1[x, y];                         // Get the pixel color at coordinate (x,y)
+                    Color pixelColor2 = image2[x, y];
+                    Color updatedColor = Color.FromArgb(Math.Max(pixelColor1.R, pixelColor2.R),
+                        Math.Max(pixelColor1.G, pixelColor2.G), Math.Max(pixelColor1.B, pixelColor2.B)); //Max valued image
+                    output[x, y] = updatedColor;                             // Set the new pixel color at coordinate (x,y)
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            return output;
+        }
+
         //This function takes an image and outputs an image with the edge strength per pixel.
         private Color[,] conversionEdgeDetection(Color[,] image)
         {
