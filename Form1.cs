@@ -150,6 +150,7 @@ namespace INFOIBV
                 case "or":
                     break;
                 case "value counting":
+                    ValuesBox.Text = countDistinctValues(Image).ToString();
                     break;
                 case "boundary trace":
                     break;
@@ -207,6 +208,29 @@ namespace INFOIBV
             progressBar.Visible = false;                                    // Hide progress bar
         }
 
+        //Counts the amount of distinct values in a given image ;we assume that the image is a greyscale
+        //Will count the amount of distinct green values when applied to a colored image
+        private int countDistinctValues(Color[,] image)
+        {
+            int[] valuesArray = new int[256];
+            int amount = 0;
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    Color pixelColor = image[x, y];                         // Get the pixel color at coordinate (x,y)
+                    valuesArray[pixelColor.G]++;                            // Increment counting array in colors position
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            foreach(int i in valuesArray)                                   // Count values bigger than zero
+            {
+                if (i > 0)
+                    amount++;
+            }
+            return amount;
+        }
         //Takes a greyscale image as input and returns its' complementary image
         private Color[,] conversionComplement(Color[,] image)
         {
