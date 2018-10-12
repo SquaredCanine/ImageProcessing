@@ -72,6 +72,8 @@
             this.histoIn = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.isBinaryButton = new System.Windows.Forms.RadioButton();
             this.histoOut = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.ValuesBox = new System.Windows.Forms.TextBox();
+            this.valuesLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.histoIn)).BeginInit();
@@ -470,11 +472,30 @@
             this.histoOut.TabIndex = 44;
             this.histoOut.Text = "chart1";
             // 
+            // ValuesBox
+            // 
+            this.ValuesBox.Location = new System.Drawing.Point(1515, 299);
+            this.ValuesBox.Name = "ValuesBox";
+            this.ValuesBox.ReadOnly = true;
+            this.ValuesBox.Size = new System.Drawing.Size(106, 22);
+            this.ValuesBox.TabIndex = 45;
+            // 
+            // valuesLabel
+            // 
+            this.valuesLabel.AutoSize = true;
+            this.valuesLabel.Location = new System.Drawing.Point(1404, 302);
+            this.valuesLabel.Name = "valuesLabel";
+            this.valuesLabel.Size = new System.Drawing.Size(105, 17);
+            this.valuesLabel.TabIndex = 46;
+            this.valuesLabel.Text = "Distinct Values:";
+            // 
             // INFOIBV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1696, 1055);
+            this.Controls.Add(this.valuesLabel);
+            this.Controls.Add(this.ValuesBox);
             this.Controls.Add(this.histoOut);
             this.Controls.Add(this.isBinaryButton);
             this.Controls.Add(this.histoIn);
@@ -565,6 +586,8 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart histoIn;
         private System.Windows.Forms.RadioButton isBinaryButton;
         private System.Windows.Forms.DataVisualization.Charting.Chart histoOut;
+        private System.Windows.Forms.TextBox ValuesBox;
+        private System.Windows.Forms.Label valuesLabel;
     }
 }
 
