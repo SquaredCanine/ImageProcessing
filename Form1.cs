@@ -215,12 +215,46 @@ namespace INFOIBV
 
         private Color[,] conversionMin(Color[,] image1, Color[,] image2)
         {
+            if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+                return null;
+            Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
+            for (int x = 0; x < image1.GetLength(0); x++)
+            {
+                for (int y = 0; y < image1.GetLength(1); y++)
+                {
+                    Color pixelColor1 = image1[x, y];                         // Get the pixel color at coordinate (x,y)
+                    Color pixelColor2 = image2[x, y];
+                    Color updatedColor = Color.FromArgb(Math.Min(pixelColor1.R, pixelColor2.R),
+                        Math.Min(pixelColor1.G, pixelColor2.G), Math.Min(pixelColor1.B, pixelColor2.B)); //Min valued image
+                    output[x, y] = updatedColor;                             // Set the new pixel color at coordinate (x,y)
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            return output;
         }
 
         private Color[,]converstionMax(Color[,] image1, Color[,] image2)
         {
+            if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+                return null;
+            Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
+            for (int x = 0; x < image1.GetLength(0); x++)
+            {
+                for (int y = 0; y < image1.GetLength(1); y++)
+                {
+                    Color pixelColor1 = image1[x, y];                         // Get the pixel color at coordinate (x,y)
+                    Color pixelColor2 = image2[x, y];
+                    Color updatedColor = Color.FromArgb(Math.Max(pixelColor1.R, pixelColor2.R),
+                        Math.Max(pixelColor1.G, pixelColor2.G), Math.Max(pixelColor1.B, pixelColor2.B)); //Max valued image
+                    output[x, y] = updatedColor;                             // Set the new pixel color at coordinate (x,y)
+                    progressBar.PerformStep();                              // Increment progress bar
+                }
+
+            }
+            return output;
         }
 
         //This function takes an image and outputs an image with the edge strength per pixel.
