@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -102,41 +103,17 @@ namespace INFOIBV
             progressBar.Maximum = InputImage.Size.Width * InputImage.Size.Height;
             progressBar.Value = 1;
             progressBar.Step = 1;
-
-            //Create Textbox List for easy Iteration
-            List<TextBox> boxes = new List<TextBox>();
-            boxes.Add(matrix1);
-            boxes.Add(matrix2);
-            boxes.Add(matrix3);
-            boxes.Add(matrix4);
-            boxes.Add(matrix5);
-            boxes.Add(matrix6);
-            boxes.Add(matrix7);
-            boxes.Add(matrix8);
-            boxes.Add(matrix9);
-            boxes.Add(matrix10);
-            boxes.Add(matrix11);
-            boxes.Add(matrix12);
-            boxes.Add(matrix13);
-            boxes.Add(matrix14);
-            boxes.Add(matrix15);
-            boxes.Add(matrix16);
-            boxes.Add(matrix17);
-            boxes.Add(matrix18);
-            boxes.Add(matrix19);
-            boxes.Add(matrix20);
-            boxes.Add(matrix21);
-            boxes.Add(matrix22);
-            boxes.Add(matrix23);
-            boxes.Add(matrix24);
-            boxes.Add(matrix25);
-            
             //Reads the combobox to decide which conversion should be done on the input image.
+            Tuple<int, int>[] tupleList;
             switch (comboBox1.Text)
             {
                 case "erosion":
+                    tupleList = convertInputToTuples();
+                    Image = conversionErosion(Image, tupleList, isBinaryButton.Checked);
                     break;
                 case "dilation":
+                    tupleList = convertInputToTuples();
+                    Image = conversionDilation(Image, tupleList, isBinaryButton.Checked);
                     break;
                 case "opening":
                     break;
@@ -215,6 +192,209 @@ namespace INFOIBV
             return;
         }
 
+        //Assignment 2 functionality
+        private Tuple<int, int>[] convertInputToTuples()
+        {
+            String allCoordinates = richTextBox1.Text;
+            String[] coordinatePairs = allCoordinates.Split(' ');
+            Tuple<int, int>[] coordinateTupleArray = new Tuple<int, int>[coordinatePairs.Length];
+            for (int x = 0; x < coordinatePairs.Length; x++)
+            {
+                String[] coordinates = coordinatePairs[x].Split(',');
+                int xCoordinate = Convert.ToInt16(coordinates[0]);
+                int yCoordinate = Convert.ToInt16(coordinates[1]);
+                coordinateTupleArray[x] = Tuple.Create(xCoordinate, yCoordinate);
+                Console.WriteLine("X: " + xCoordinate + " Y: " + yCoordinate);
+            }
+            return coordinateTupleArray;
+        }
+
+        private Color[,] conversionErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary)
+        {
+            if (isBinary)
+            {
+                return conversionErosionBinary(image, kernel);
+            }
+            else
+            {
+                return conversionErosionGrayscale(image, kernel);
+            }
+        }
+
+        private Color[,] conversionDilation(Color[,]image, Tuple<int, int>[] kernel, Boolean isBinary)
+        {
+            if (isBinary)
+            {
+                return conversionDilationBinary(image, kernel);
+            }
+            else
+            {
+                return conversionDilationGrayscale(image, kernel);
+            }
+        }
+
+        private Color[,] makeBinaryImage()
+        {
+            Color[,] newBinaryImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    newBinaryImage[x, y] = Color.Black;
+                }
+            }
+
+            return newBinaryImage;
+        }
+
+        private Color[,] conversionDilationBinary(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = makeBinaryImage();
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    if (image[x, y].R == 255)
+                    {
+                        for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                        {
+                            int structureX = x + kernel[structureIndex].Item1;
+                            int structureY = y + kernel[structureIndex].Item2;
+
+                            if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                              structureX > (InputImage.Size.Width - 1)))
+                            {
+                                newImage[structureX, structureY] = Color.FromArgb(255, 255, 255);
+                            }
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private Color[,] conversionErosionBinary(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = makeBinaryImage();
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    if (image[x, y].R == 255)
+                    {
+                        bool doesKernelFit = true;
+                        for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                        {
+                            int structureX = x + kernel[structureIndex].Item1;
+                            int structureY = y + kernel[structureIndex].Item2;
+
+                            if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                                  structureX > (InputImage.Size.Width - 1)))
+                            {
+                                doesKernelFit = doesKernelFit && image[structureX, structureY].R == 255;
+                            }
+
+                            if (!doesKernelFit)
+                            {
+                                break;
+                            }
+                        }
+                        if (doesKernelFit)
+                        {
+                            newImage[x, y] = Color.White;
+                        }
+                    }
+                }
+            }
+
+            return newImage;
+        }
+
+        private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+                                List<int> valueList = new List<int>();
+                    for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                    {
+                        int structureX = x + kernel[structureIndex].Item1;
+                        int structureY = y + kernel[structureIndex].Item2;
+
+                        if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                            structureX > (InputImage.Size.Width - 1 )))
+                        {
+                            valueList.Add(image[structureX, structureY].R);
+                        }
+                    }
+
+                    int newColor = getMinimumValue(valueList);
+                    newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private Color[,] conversionDilationGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        {
+            Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
+                    for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
+                    {
+                        int structureX = x + kernel[structureIndex].Item1;
+                        int structureY = y + kernel[structureIndex].Item2;
+
+                        if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
+                              structureX > (InputImage.Size.Width - 1)))
+                        {
+                            valueList.Add(image[structureX, structureY].R);
+                        }
+                    }
+
+                    int newColor = getMaximumValue(valueList);
+                    newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
+                }
+            }
+            Console.WriteLine("Breakpoint");
+
+            return newImage;
+        }
+
+        private int getMinimumValue(List<int> valueList)
+        {
+            int lowValue = 255;
+            foreach (int element in valueList)
+            {
+                if (element < lowValue)
+                {
+                    lowValue = element;
+                }
+            }
+
+            return lowValue;
+        }
+
+        private int getMaximumValue(List<int> valueList)
+        {
+            int highValue = 0;
+            foreach (int element in valueList)
+            {
+                if (element > highValue)
+                {
+                    highValue = element;
+                }
+            }
+
+            return highValue;
+        }
         //Retrieves a second image via file search
         private Color[,] getSecondImage()
         {
