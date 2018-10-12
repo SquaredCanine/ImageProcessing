@@ -101,40 +101,13 @@ namespace INFOIBV
             progressBar.Minimum = 1;
             progressBar.Maximum = InputImage.Size.Width * InputImage.Size.Height;
             progressBar.Value = 1;
-            progressBar.Step = 1;
-
-            //Create Textbox List for easy Iteration
-            List<TextBox> boxes = new List<TextBox>();
-            boxes.Add(matrix1);
-            boxes.Add(matrix2);
-            boxes.Add(matrix3);
-            boxes.Add(matrix4);
-            boxes.Add(matrix5);
-            boxes.Add(matrix6);
-            boxes.Add(matrix7);
-            boxes.Add(matrix8);
-            boxes.Add(matrix9);
-            boxes.Add(matrix10);
-            boxes.Add(matrix11);
-            boxes.Add(matrix12);
-            boxes.Add(matrix13);
-            boxes.Add(matrix14);
-            boxes.Add(matrix15);
-            boxes.Add(matrix16);
-            boxes.Add(matrix17);
-            boxes.Add(matrix18);
-            boxes.Add(matrix19);
-            boxes.Add(matrix20);
-            boxes.Add(matrix21);
-            boxes.Add(matrix22);
-            boxes.Add(matrix23);
-            boxes.Add(matrix24);
-            boxes.Add(matrix25);
-            
+            progressBar.Step = 1;  
             //Reads the combobox to decide which conversion should be done on the input image.
             switch (comboBox1.Text)
             {
                 case "erosion":
+                    Tuple<int, int>[] tupleList = convertInputToTuples();
+                    Image = conversionErosion(Image, tupleList, isBinaryButton.Checked);
                     break;
                 case "dilation":
                     break;
@@ -206,6 +179,46 @@ namespace INFOIBV
             progressBar.Visible = false;                                    // Hide progress bar
         }
 
+        //Assignment 2 functionality
+        private Tuple<int, int>[] convertInputToTuples()
+        {
+            String allCoordinates = richTextBox1.Text;
+            String[] coordinatePairs = allCoordinates.Split(' ');
+            Tuple<int, int>[] coordinateTupleArray = new Tuple<int, int>[coordinatePairs.Length];
+            for (int x = 0; x < coordinatePairs.Length; x++)
+            {
+                String[] coordinates = coordinatePairs[x].Split(',');
+                int xCoordinate = Convert.ToInt16(coordinates[0]);
+                int yCoordinate = Convert.ToInt16(coordinates[1]);
+                coordinateTupleArray[x] = Tuple.Create(xCoordinate, yCoordinate);
+                Console.WriteLine("X: " + xCoordinate + " Y: " + yCoordinate);
+            }
+            return coordinateTupleArray;
+        }
+
+        private Color[,] conversionErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary)
+        {
+            if (isBinary)
+            {
+                return conversionErosionBinary(image);
+            }
+            else
+            {
+                return conversionErosionGrayscale(image);
+            }
+        }
+
+        private Color[,] conversionErosionBinary(Color[,] image)
+        {
+            return image;
+        }
+
+        private Color[,] conversionErosionGrayscale(Color[,] image)
+        {
+            return image;
+        }
+
+        //Assignment 1 functionality
         //This function takes an image and outputs an image with the edge strength per pixel.
         private Color[,] conversionEdgeDetection(Color[,] image)
         {
