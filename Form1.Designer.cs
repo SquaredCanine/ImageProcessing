@@ -45,13 +45,12 @@
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.histoIn = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.isBinaryButton = new System.Windows.Forms.RadioButton();
             this.histoOut = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.label1 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-
             this.ValuesBox = new System.Windows.Forms.TextBox();
             this.valuesLabel = new System.Windows.Forms.Label();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.histoIn)).BeginInit();
@@ -187,18 +186,6 @@
             this.histoIn.TabIndex = 41;
             this.histoIn.Text = "chart1";
             // 
-            // isBinaryButton
-            // 
-            this.isBinaryButton.AutoSize = true;
-            this.isBinaryButton.Location = new System.Drawing.Point(548, 18);
-            this.isBinaryButton.Name = "isBinaryButton";
-            this.isBinaryButton.Size = new System.Drawing.Size(68, 21);
-            this.isBinaryButton.TabIndex = 43;
-            this.isBinaryButton.TabStop = true;
-            this.isBinaryButton.Text = "binary";
-            this.isBinaryButton.UseVisualStyleBackColor = true;
-            this.isBinaryButton.Visible = false;
-            // 
             // histoOut
             // 
             chartArea4.AxisX.LabelStyle.Enabled = false;
@@ -244,7 +231,7 @@
             this.richTextBox1.Size = new System.Drawing.Size(216, 193);
             this.richTextBox1.TabIndex = 46;
             this.richTextBox1.Text = "";
-
+            // 
             // ValuesBox
             // 
             this.ValuesBox.Location = new System.Drawing.Point(1515, 299);
@@ -262,17 +249,28 @@
             this.valuesLabel.TabIndex = 46;
             this.valuesLabel.Text = "Distinct Values:";
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(530, 18);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(70, 21);
+            this.checkBox1.TabIndex = 47;
+            this.checkBox1.Text = "Binary";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.Visible = false;
+            // 
             // INFOIBV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1696, 1055);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.valuesLabel);
             this.Controls.Add(this.ValuesBox);
             this.Controls.Add(this.histoOut);
-            this.Controls.Add(this.isBinaryButton);
             this.Controls.Add(this.histoIn);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.progressBar);
@@ -309,12 +307,12 @@
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.DataVisualization.Charting.Chart histoIn;
-        private System.Windows.Forms.RadioButton isBinaryButton;
         private System.Windows.Forms.DataVisualization.Charting.Chart histoOut;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.TextBox ValuesBox;
         private System.Windows.Forms.Label valuesLabel;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
 

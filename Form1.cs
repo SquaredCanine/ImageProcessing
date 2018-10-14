@@ -105,19 +105,26 @@ namespace INFOIBV
             progressBar.Step = 1;
             //Reads the combobox to decide which conversion should be done on the input image.
             Tuple<int, int>[] tupleList;
+            bool checkeredcheckbox = checkBox1.Checked;
             switch (comboBox1.Text)
             {
                 case "erosion":
                     tupleList = convertInputToTuples();
-                    Image = conversionErosion(Image, tupleList, isBinaryButton.Checked);
+                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
                     break;
                 case "dilation":
                     tupleList = convertInputToTuples();
-                    Image = conversionDilation(Image, tupleList, isBinaryButton.Checked);
+                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
                     break;
                 case "opening":
+                    tupleList = convertInputToTuples();
+                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
+                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
                     break;
                 case "closing":
+                    tupleList = convertInputToTuples();
+                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
+                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
                     break;
                 case "complement":
                     Image = conversionComplement(Image);
@@ -271,8 +278,6 @@ namespace INFOIBV
                     }
                 }
             }
-            Console.WriteLine("Breakpoint");
-
             return newImage;
         }
 
@@ -317,7 +322,11 @@ namespace INFOIBV
         private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int>[] kernel)
         {
             Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
-                                List<int> valueList = new List<int>();
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    List<int> valueList = new List<int>();
                     for (int structureIndex = 0; structureIndex < kernel.Length; structureIndex++)
                     {
                         int structureX = x + kernel[structureIndex].Item1;
@@ -326,7 +335,7 @@ namespace INFOIBV
                         if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
                             structureX > (InputImage.Size.Width - 1 )))
                         {
-                            valueList.Add(image[structureX, structureY].R);
+                                valueList.Add(image[structureX, structureY].R);
                         }
                     }
 
@@ -334,8 +343,6 @@ namespace INFOIBV
                     newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
                 }
             }
-            Console.WriteLine("Breakpoint");
-
             return newImage;
         }
 
@@ -974,12 +981,12 @@ namespace INFOIBV
             if (comboBox1.Text.Equals("erosion") || comboBox1.Text.Equals("dilation") ||
                 comboBox1.Text.Equals("opening") || comboBox1.Text.Equals("closing"))
             {
-                isBinaryButton.Visible = true;
+                checkBox1.Visible = true;
             }
 
             else
             {
-                isBinaryButton.Visible = false;
+                checkBox1.Visible = false;
             }
 
         }
