@@ -174,6 +174,10 @@ namespace INFOIBV
                     ValuesBox.Text = countDistinctValues(Image).ToString();
                     break;
                 case "boundary trace":
+                    Image = conversionBoundary(Image);
+                    break;
+                case "greyscale":
+                    Image = conversionGrayscale(Image);
                     break;
                 default:
                     Console.WriteLine("Nothing matched");
@@ -244,8 +248,9 @@ namespace INFOIBV
                 for(int j = 0; j < n; j++)     //loops the input elements
                 {
                     double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
-                    pt = complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
+                    pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
+
                 output[k] = new Tuple<int,int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
             }
 
@@ -255,10 +260,11 @@ namespace INFOIBV
         private Complex[] tupleToComplexList(Tuple<int, int>[] list)
         {
             Complex[] output = new Complex[list.Length];
-            foreach(Tuple<int, int> elem in list)
+            int i = 0;
+            foreach (Tuple<int, int> elem in list)
             {
-                int i = 0;
-                output[i++] = new Complex(elem.Item1, elem.Item2);
+                output[i] = new Complex(elem.Item1, elem.Item2);
+                i = i + 1;
             }
             return output;
         }
@@ -447,6 +453,115 @@ namespace INFOIBV
 
             return newImage;
         }
+
+        //57, 255, 20
+        private Color[,] conversionBoundary(Color[,] image)
+        {
+            Tuple<int, int> startCoordinate = getStartPoint(image);
+            if (startCoordinate == null)
+            {
+                Console.WriteLine("No shape detected");
+                return image;
+            }
+            Color[,] newImage = makeBinaryImage();
+            int startPointx = startCoordinate.Item1;
+            int startPointy = startCoordinate.Item2;
+            List<Tuple<int, int>> listofThings =
+                getShapeCoordinates(image, startPointx, startPointy);
+
+            Tuple<int, int>[] arrayList = createFourierDescriptor(listofThings.ToArray());
+            foreach (Tuple<int, int> elem in arrayList)
+            {
+                try
+                {
+                    newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
+                }
+                catch
+                {
+                    Console.Write("Whoops");
+                }
+            }
+
+            return newImage;
+        }
+
+        private List<Tuple<int, int>> getShapeCoordinates(Color[,] image, int startx, int starty)
+        {
+            List<Tuple<int,int>> listOfCoordinates = new List<Tuple<int, int>>();
+            listOfCoordinates.Add(new Tuple<int, int>(startx,starty));
+            int currentx = startx;
+            int currenty = starty;
+            bool done = false;
+            int direction = 1;
+            while (!done)
+            {
+                direction = (direction + 7) % 8;
+                direction = getNextPoint(image, currentx, currenty, direction);
+                if (direction > 8) break;   
+                currentx = currentx + clockwiseRotation[direction].Item1;
+                currenty = currenty + clockwiseRotation[direction].Item2;
+                done = (currentx == startx && currenty == starty);
+                if (!done)
+                {
+                    listOfCoordinates.Add(new Tuple<int, int>(currentx, currenty));
+                }
+            }
+            return listOfCoordinates;
+        }
+
+        private Tuple<int, int>[] clockwiseRotation =
+        {new Tuple<int, int>(-1, -1), new Tuple<int, int>(0, -1), new Tuple<int, int>(1, -1),
+            new Tuple<int, int>(1,0), new Tuple<int, int>(1,1), new Tuple<int, int>(0,1),
+            new Tuple<int, int>(-1,1), new Tuple<int, int>(-1,0)};
+
+
+        private int getNextPoint(Color[,] image, int currentX, int currentY, int dir)
+        {
+            for(int y = 0; y < clockwiseRotation.Length; y++)
+            {
+                int x = (y + dir) % 8;
+                int structurex = currentX + clockwiseRotation[x].Item1;
+                int structurey = currentY + clockwiseRotation[x].Item2;
+                int colour = 600;
+                try
+                {
+                    colour = image[structurex, structurey].R;
+                }
+                catch
+                {
+                    Console.WriteLine("Out of bounds");
+                }
+
+                if (!(colour > 255))
+                {
+                    if (colour == 255)
+                    {
+                        return x;
+                    }
+                }
+
+            }
+
+            return 8;
+        }
+
+
+        private Tuple<int, int> getStartPoint(Color[,] image)
+        {
+            for (int x = 0; x < InputImage.Size.Width; x++)
+            {
+                for (int y = 0; y < InputImage.Size.Height; y++)
+                {
+                    if (image[x, y].R == 255)
+                    {
+                        return new Tuple<int, int>(x,y);
+                    }
+                }
+            }
+
+            return null;
+        }
+
 
         private int getMinimumValue(List<int> valueList)
         {
