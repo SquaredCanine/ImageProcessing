@@ -248,8 +248,9 @@ namespace INFOIBV
                 for(int j = 0; j < n; j++)     //loops the input elements
                 {
                     double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
-                    pt = complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
+                    pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
+
                 output[k] = new Tuple<int,int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
             }
 
@@ -259,10 +260,11 @@ namespace INFOIBV
         private Complex[] tupleToComplexList(Tuple<int, int>[] list)
         {
             Complex[] output = new Complex[list.Length];
-            foreach(Tuple<int, int> elem in list)
+            int i = 0;
+            foreach (Tuple<int, int> elem in list)
             {
-                int i = 0;
-                output[i++] = new Complex(elem.Item1, elem.Item2);
+                output[i] = new Complex(elem.Item1, elem.Item2);
+                i = i + 1;
             }
             return output;
         }
@@ -467,10 +469,17 @@ namespace INFOIBV
             List<Tuple<int, int>> listofThings =
                 getShapeCoordinates(image, startPointx, startPointy);
 
-            foreach (Tuple<int, int> elem in listofThings)
+            Tuple<int, int>[] arrayList = createFourierDescriptor(listofThings.ToArray());
+            foreach (Tuple<int, int> elem in arrayList)
             {
-                newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
-                Console.WriteLine(elem);
+                try
+                {
+                    newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
+                }
+                catch
+                {
+                    Console.Write("Whoops");
+                }
             }
 
             return newImage;
