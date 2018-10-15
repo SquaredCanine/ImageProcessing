@@ -116,6 +116,14 @@ namespace INFOIBV
                     tupleList = convertInputToTuples();
                     Image = conversionDilation(Image, tupleList, checkeredcheckbox);
                     break;
+                case "geodesic erosion":
+                    tupleList = convertInputToTuples();
+                    Image = conversionGeodesicErosion(Image, tupleList, checkeredcheckbox, getSecondImage());
+                    break;
+                case "geodesic dilation":
+                    tupleList = convertInputToTuples();
+                    Image = conversionGeodesicDilation(Image, tupleList, checkeredcheckbox, getSecondImage());
+                    break;
                 case "opening":
                     tupleList = convertInputToTuples();
                     Image = conversionErosion(Image, tupleList, checkeredcheckbox);
@@ -211,6 +219,15 @@ namespace INFOIBV
             return coordinateTupleArray;
         }
 
+        private Color[,] conversionGeodesicErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        {
+                return conversionMax(conversionErosion(image, kernel, isBinary), checkImage);
+        }
+
+        private Color[,] conversionGeodesicDilation(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        {
+            return conversionMin(conversionDilation(image, kernel, isBinary), checkImage);
+        }
         private Color[,] conversionErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary)
         {
             if (isBinary)
