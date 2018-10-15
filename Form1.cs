@@ -10,9 +10,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Forms.VisualStyles;
+using System.Numerics;
 
 namespace INFOIBV
+
 {
+   
     public partial class INFOIBV : Form
     {
         private int currentImageWidth;
@@ -116,6 +119,26 @@ namespace INFOIBV
                     tupleList = convertInputToTuples();
                     Image = conversionDilation(Image, tupleList, checkeredcheckbox);
                     break;
+                case "geodesic erosion":
+                    Color[,] im2 = getSecondImage();
+                    if (im2.GetLength(0) != InputImage.Size.Height || im2.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
+                    tupleList = convertInputToTuples();
+                    Image = conversionGeodesicErosion(Image, tupleList, checkeredcheckbox, im2);
+                    break;
+                case "geodesic dilation":
+                    Color[,] im3 = getSecondImage();
+                    if (im3.GetLength(0) != InputImage.Size.Height || im3.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
+                    tupleList = convertInputToTuples();
+                    Image = conversionGeodesicDilation(Image, tupleList, checkeredcheckbox, im3);
+                    break;
                 case "opening":
                     tupleList = convertInputToTuples();
                     Image = conversionErosion(Image, tupleList, checkeredcheckbox);
@@ -130,9 +153,21 @@ namespace INFOIBV
                     Image = conversionComplement(Image);
                     break;
                 case "min":
+                    Color[,] im4 = getSecondImage();
+                    if (im4.GetLength(0) != InputImage.Size.Height || im4.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     Image = conversionMin(Image, getSecondImage());
                     break;
                 case "max":
+                    Color[,] im5 = getSecondImage();
+                    if (im5.GetLength(0) != InputImage.Size.Height || im5.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     Image = conversionMax(Image, getSecondImage());
                     break;
                 case "value counting":
@@ -198,6 +233,40 @@ namespace INFOIBV
             progressBar.Visible = false;                                    // Hide progress bar
         }
 
+        //Returns the fourier shape descriptor for a given set of points
+        private Tuple<int, int>[] createFourierDescriptor(Tuple<int, int>[] borderPoints)
+        {
+
+            int n = borderPoints.Length;
+            Tuple<int, int>[] output = new Tuple<int, int>[n];
+            Complex[] complexList = tupleToComplexList(borderPoints);
+
+            for(int k = 0; k < n; k++)        //loops the output elements
+            {
+                Complex pt = 0;
+
+                for(int j = 0; j < n; j++)     //loops the input elements
+                {
+                    double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
+                    pt = complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
+                }
+                output[k] = new Tuple<int,int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
+            }
+
+            return output;
+        }
+
+        private Complex[] tupleToComplexList(Tuple<int, int>[] list)
+        {
+            Complex[] output = new Complex[list.Length];
+            foreach(Tuple<int, int> elem in list)
+            {
+                int i = 0;
+                output[i++] = new Complex(elem.Item1, elem.Item2);
+            }
+            return output;
+        }
+
         //Assignment 2 functionality
         private Tuple<int, int>[] convertInputToTuples()
         {
@@ -215,6 +284,15 @@ namespace INFOIBV
             return coordinateTupleArray;
         }
 
+        private Color[,] conversionGeodesicErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        {
+                return conversionMax(conversionErosion(image, kernel, isBinary), checkImage);
+        }
+
+        private Color[,] conversionGeodesicDilation(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        {
+            return conversionMin(conversionDilation(image, kernel, isBinary), checkImage);
+        }
         private Color[,] conversionErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary)
         {
             if (isBinary)
@@ -510,7 +588,7 @@ namespace INFOIBV
             {
                 string file = openImageDialog.FileName;                     // Get the file name
                 Bitmap imgBmap = new Bitmap(file);                          // Create new Bitmap from file
-                Color[,] image = new Color[imgBmap.Size.Width,imgBmap.Size.Height];
+                Color[,] image = new Color[imgBmap.Size.Width, imgBmap.Size.Height];
                 for (int x = 0; x < imgBmap.Size.Width; x++)
                 {
                     for (int y = 0; y < imgBmap.Size.Height; y++)
@@ -561,7 +639,10 @@ namespace INFOIBV
         private Color[,] conversionMin(Color[,] image1, Color[,] image2)
         {
             if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+            {
+                System.Windows.Forms.MessageBox.Show("Image sizes didn't match, please try again");
                 return null;
+            }
             Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
             for (int x = 0; x < image1.GetLength(0); x++)
@@ -583,7 +664,11 @@ namespace INFOIBV
         private Color[,]conversionMax(Color[,] image1, Color[,] image2)
         {
             if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+            {
+                System.Windows.Forms.MessageBox.Show("Image sizes didn't match, please try again");
                 return null;
+            } 
+                
             Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
             for (int x = 0; x < image1.GetLength(0); x++)
