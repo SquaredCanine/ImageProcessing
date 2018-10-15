@@ -10,9 +10,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Forms.VisualStyles;
+using System.Numerics;
 
 namespace INFOIBV
+
 {
+   
     public partial class INFOIBV : Form
     {
         private int currentImageWidth;
@@ -193,10 +196,39 @@ namespace INFOIBV
 
             progressBar.Visible = false;                                    // Hide progress bar
         }
+
         //Returns the fourier shape descriptor for a given set of points
-        private void createFourierDescriptor(Tuple<int, int>[] borderPoints)
+        private Tuple<int, int>[] createFourierDescriptor(Tuple<int, int>[] borderPoints)
         {
-            return;
+
+            int n = borderPoints.Length;
+            Tuple<int, int>[] output = new Tuple<int, int>[n];
+            Complex[] complexList = tupleToComplexList(borderPoints);
+
+            for(int k = 0; k < n; k++)        //loops the output elements
+            {
+                Complex pt = 0;
+
+                for(int j = 0; j < n; j++)     //loops the input elements
+                {
+                    double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
+                    pt = complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
+                }
+                output[k] = new Tuple<int,int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
+            }
+
+            return output;
+        }
+
+        private Complex[] tupleToComplexList(Tuple<int, int>[] list)
+        {
+            Complex[] output = new Complex[list.Length];
+            foreach(Tuple<int, int> elem in list)
+            {
+                int i = 0;
+                output[i++] = new Complex(elem.Item1, elem.Item2);
+            }
+            return output;
         }
 
         //Assignment 2 functionality
