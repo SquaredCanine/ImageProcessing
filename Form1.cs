@@ -242,7 +242,7 @@ namespace INFOIBV
 
             int n = borderPoints.Length;
             Tuple<int, int>[] output = new Tuple<int, int>[n];
-            Complex[] complexList = tupleToComplexList(borderPoints);
+            Complex[] complexList = tupleToComplexArray(borderPoints);
 
             for(int k = 0; k < n; k++)        //loops the output elements
             {
@@ -250,7 +250,7 @@ namespace INFOIBV
 
                 for(int j = 0; j < n; j++)     //loops the input elements
                 {
-                    double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
+                    double exponent = 2 * Math.PI * j * k / n;                  // calculating the exponent
                     pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
 
@@ -259,8 +259,36 @@ namespace INFOIBV
 
             return output;
         }
+        private Tuple<int,int>[] computeDft(double[] inreal, double[] inimag)
+        {
+            double[] outreal = new double[inreal.Length];
+            double[] outimag = new double[inimag.Length];
+            int n = inreal.Length;
+            for (int k = 0; k < n; k++)
+            {  // For each output element
+                double sumreal = 0;
+                double sumimag = 0;
+                for (int t = 0; t < n; t++)
+                {  // For each input element
+                    double angle = 2 * Math.PI * t * k / n;
+                    sumreal += inreal[t] * Math.Cos(angle) + inimag[t] * Math.Sin(angle);
+                    sumimag += -inreal[t] * Math.Sin(angle) + inimag[t] * Math.Cos(angle);
+                }
+                outreal[k] = sumreal;
+                outimag[k] = sumimag;
+            }
 
-        private Complex[] tupleToComplexList(Tuple<int, int>[] list)
+            Tuple<int, int>[] output = new Tuple<int, int>[inreal.Length];
+            for (int i = 0; i< outreal.Length; i++)
+            {
+                Tuple<int, int> tuple = new Tuple<int, int>((int)outreal[i], (int)outimag[i]);
+                output[i] = tuple;
+            }
+
+            return output;
+        }
+
+        private Complex[] tupleToComplexArray(Tuple<int, int>[] list)
         {
             Complex[] output = new Complex[list.Length];
             int i = 0;
@@ -493,7 +521,20 @@ namespace INFOIBV
             int startx = getStartPoint(image).Item1;
             int starty = getStartPoint(image).Item2;
             Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
-            Tuple<int, int>[] fourierCoordinateArray = createFourierDescriptor(shapeCoordinateArray);
+
+            double[] reals = new double[shapeCoordinateArray.Length];
+            double[] imags = new double[shapeCoordinateArray.Length];
+            
+            int i = 0;
+
+            foreach (Tuple<int,int> elem in shapeCoordinateArray)
+            {
+                reals[i] = elem.Item1;
+                imags[i] = elem.Item2;
+                i++;
+            }
+
+            Tuple<int, int>[] fourierCoordinateArray = computeDft(reals, imags);
 
             Color[,] newImage = makeBinaryImage();
 
@@ -539,8 +580,7 @@ namespace INFOIBV
         {new Tuple<int, int>(-1, -1), new Tuple<int, int>(0, -1), new Tuple<int, int>(1, -1),
             new Tuple<int, int>(1,0), new Tuple<int, int>(1,1), new Tuple<int, int>(0,1),
             new Tuple<int, int>(-1,1), new Tuple<int, int>(-1,0)};
-
-
+        
         private int getNextPoint(Color[,] image, int currentX, int currentY, int dir)
         {
             for(int y = 0; y < clockwiseRotation.Length; y++)
@@ -570,8 +610,7 @@ namespace INFOIBV
 
             return 8;
         }
-
-
+        
         private Tuple<int, int> getStartPoint(Color[,] image)
         {
             for (int x = 0; x < InputImage.Size.Width; x++)
@@ -587,8 +626,7 @@ namespace INFOIBV
 
             return null;
         }
-
-
+        
         private int getMinimumValue(List<int> valueList)
         {
             int lowValue = 255;
