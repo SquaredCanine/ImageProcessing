@@ -176,6 +176,9 @@ namespace INFOIBV
                 case "boundary trace":
                     Image = conversionBoundary(Image);
                     break;
+                case "fourier descriptor":
+                    Image = conversionFourier(Image);
+                    break;
                 case "greyscale":
                     Image = conversionGrayscale(Image);
                     break;
@@ -469,7 +472,7 @@ namespace INFOIBV
             List<Tuple<int, int>> listofThings =
                 getShapeCoordinates(image, startPointx, startPointy);
 
-            Tuple<int, int>[] arrayList = createFourierDescriptor(listofThings.ToArray());
+            Tuple<int, int>[] arrayList = listofThings.ToArray();
             foreach (Tuple<int, int> elem in arrayList)
             {
                 try
@@ -482,6 +485,29 @@ namespace INFOIBV
                 }
             }
 
+            return newImage;
+        }
+
+        private Color[,] conversionFourier(Color[,] image)
+        {
+            int startx = getStartPoint(image).Item1;
+            int starty = getStartPoint(image).Item2;
+            Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
+            Tuple<int, int>[] fourierCoordinateArray = createFourierDescriptor(shapeCoordinateArray);
+
+            Color[,] newImage = makeBinaryImage();
+
+            foreach (Tuple<int, int> elem in fourierCoordinateArray)
+            {
+                try
+                {
+                    newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
+                }
+                catch
+                {
+                    Console.Write("Whoops");
+                }
+            }
             return newImage;
         }
 
