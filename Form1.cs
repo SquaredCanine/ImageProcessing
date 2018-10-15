@@ -120,12 +120,24 @@ namespace INFOIBV
                     Image = conversionDilation(Image, tupleList, checkeredcheckbox);
                     break;
                 case "geodesic erosion":
+                    Color[,] im2 = getSecondImage();
+                    if (im2.GetLength(0) != InputImage.Size.Height || im2.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     tupleList = convertInputToTuples();
-                    Image = conversionGeodesicErosion(Image, tupleList, checkeredcheckbox, getSecondImage());
+                    Image = conversionGeodesicErosion(Image, tupleList, checkeredcheckbox, im2);
                     break;
                 case "geodesic dilation":
+                    Color[,] im3 = getSecondImage();
+                    if (im3.GetLength(0) != InputImage.Size.Height || im3.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     tupleList = convertInputToTuples();
-                    Image = conversionGeodesicDilation(Image, tupleList, checkeredcheckbox, getSecondImage());
+                    Image = conversionGeodesicDilation(Image, tupleList, checkeredcheckbox, im3);
                     break;
                 case "opening":
                     tupleList = convertInputToTuples();
@@ -141,9 +153,21 @@ namespace INFOIBV
                     Image = conversionComplement(Image);
                     break;
                 case "min":
+                    Color[,] im4 = getSecondImage();
+                    if (im4.GetLength(0) != InputImage.Size.Height || im4.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     Image = conversionMin(Image, getSecondImage());
                     break;
                 case "max":
+                    Color[,] im5 = getSecondImage();
+                    if (im5.GetLength(0) != InputImage.Size.Height || im5.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    {
+                        MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
+                        return;
+                    }
                     Image = conversionMax(Image, getSecondImage());
                     break;
                 case "value counting":
@@ -509,7 +533,10 @@ namespace INFOIBV
         private Color[,] conversionMin(Color[,] image1, Color[,] image2)
         {
             if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+            {
+                System.Windows.Forms.MessageBox.Show("Image sizes didn't match, please try again");
                 return null;
+            }
             Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
             for (int x = 0; x < image1.GetLength(0); x++)
@@ -531,7 +558,11 @@ namespace INFOIBV
         private Color[,]conversionMax(Color[,] image1, Color[,] image2)
         {
             if (image1.GetLength(0) != image2.GetLength(0) || image1.GetLength(1) != image2.GetLength(1))  //images should be of the same size
+            {
+                System.Windows.Forms.MessageBox.Show("Image sizes didn't match, please try again");
                 return null;
+            } 
+                
             Color[,] output = new Color[image1.GetLength(0), image1.GetLength(1)];
 
             for (int x = 0; x < image1.GetLength(0); x++)
