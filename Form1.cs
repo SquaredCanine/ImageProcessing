@@ -516,11 +516,26 @@ namespace INFOIBV
             return newImage;
         }
 
+        private Tuple<int,int> getCentroid (Tuple<int,int>[] array)
+        {
+            int sumx = 0;
+            int sumy = 0;
+            int n = array.Length;
+            foreach(Tuple<int,int> elem in array)
+            {
+                sumx += elem.Item1;
+                sumy += elem.Item2;
+            }
+            
+            return new Tuple<int, int>(sumx / n, sumy / n);
+        }
+
         private Color[,] conversionFourier(Color[,] image)
         {
             int startx = getStartPoint(image).Item1;
             int starty = getStartPoint(image).Item2;
             Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
+            Tuple<int, int> centroid = getCentroid(shapeCoordinateArray);
 
             double[] reals = new double[shapeCoordinateArray.Length];
             double[] imags = new double[shapeCoordinateArray.Length];
@@ -542,7 +557,7 @@ namespace INFOIBV
             {
                 try
                 {
-                    newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
+                    newImage[centroid.Item1+ elem.Item1, centroid.Item2 + elem.Item2] = Color.FromArgb(57, 255, 20);
                 }
                 catch
                 {
