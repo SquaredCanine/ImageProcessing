@@ -154,7 +154,7 @@ namespace INFOIBV
                     break;
                 case "min":
                     Color[,] im4 = getSecondImage();
-                    if (im4.GetLength(0) != InputImage.Size.Height || im4.GetLength(1) != InputImage.Size.Width)  // Dimension check
+                    if (im4.GetLength(0) != Image.GetLength(0) || im4.GetLength(1) != Image.GetLength(1))  // Dimension check
                     {
                         MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
                         return;
@@ -282,6 +282,7 @@ namespace INFOIBV
             for (int i = 0; i< outreal.Length; i++)
             {
                 Tuple<int, int> tuple = new Tuple<int, int>((int)outreal[i], (int)outimag[i]);
+                Console.WriteLine(tuple);
                 output[i] = tuple;
             }
 
@@ -542,7 +543,7 @@ namespace INFOIBV
             {
                 try
                 {
-                    newImage[elem.Item1, elem.Item2] = Color.FromArgb(57, 255, 20);
+                    newImage[291+ elem.Item1, 208 + elem.Item2] = Color.FromArgb(57, 255, 20);
                 }
                 catch
                 {
@@ -562,7 +563,7 @@ namespace INFOIBV
             int direction = 1;
             while (!done)
             {
-                direction = (direction + 7) % 8;
+                direction = (direction + 6) % 8;
                 direction = getNextPoint(image, currentx, currenty, direction);
                 if (direction > 8) break;   
                 currentx = currentx + clockwiseRotation[direction].Item1;
@@ -672,6 +673,7 @@ namespace INFOIBV
                 if (imgBmap.Size.Height <= 0 || imgBmap.Size.Width <= 0 ||
                     imgBmap.Size.Height > 512 || imgBmap.Size.Width > 512)  // Dimension check
                 {
+                    Console.WriteLine(imgBmap.Size.Height + "::" +imgBmap.Size.Width);
                     MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
                     return null;
                 }
