@@ -107,17 +107,14 @@ namespace INFOIBV
             progressBar.Value = 1;
             progressBar.Step = 1;
             //Reads the combobox to decide which conversion should be done on the input image.
-            Tuple<int, int>[] tupleList;
             bool checkeredcheckbox = checkBox1.Checked;
             switch (comboBox1.Text)
             {
                 case "erosion":
-                    tupleList = convertInputToTuples();
-                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
+                    Image = conversionErosion(Image, checkeredcheckbox);
                     break;
                 case "dilation":
-                    tupleList = convertInputToTuples();
-                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
+                    Image = conversionDilation(Image, checkeredcheckbox);
                     break;
                 case "geodesic erosion":
                     Color[,] im2 = getSecondImage();
@@ -126,8 +123,7 @@ namespace INFOIBV
                         MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
                         return;
                     }
-                    tupleList = convertInputToTuples();
-                    Image = conversionGeodesicErosion(Image, tupleList, checkeredcheckbox, im2);
+                    Image = conversionGeodesicErosion(Image, checkeredcheckbox, im2);
                     break;
                 case "geodesic dilation":
                     Color[,] im3 = getSecondImage();
@@ -136,18 +132,15 @@ namespace INFOIBV
                         MessageBox.Show("Error in image dimensions (have to be > 0 and <= 512)");
                         return;
                     }
-                    tupleList = convertInputToTuples();
-                    Image = conversionGeodesicDilation(Image, tupleList, checkeredcheckbox, im3);
+                    Image = conversionGeodesicDilation(Image, checkeredcheckbox, im3);
                     break;
                 case "opening":
-                    tupleList = convertInputToTuples();
-                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
-                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
+                    Image = conversionErosion(Image, checkeredcheckbox);
+                    Image = conversionDilation(Image, checkeredcheckbox);
                     break;
                 case "closing":
-                    tupleList = convertInputToTuples();
-                    Image = conversionDilation(Image, tupleList, checkeredcheckbox);
-                    Image = conversionErosion(Image, tupleList, checkeredcheckbox);
+                    Image = conversionDilation(Image, checkeredcheckbox);
+                    Image = conversionErosion(Image, checkeredcheckbox);
                     break;
                 case "complement":
                     Image = conversionComplement(Image);
@@ -189,6 +182,10 @@ namespace INFOIBV
 
 
             // Copy array to output Bitmap
+            if (Image == null)
+            {
+                Image = makeBinaryImage();
+            }
             for (int x = 0; x < Image.GetLength(0); x++)
             {
                 for (int y = 0; y < Image.GetLength(1); y++)
@@ -295,7 +292,7 @@ namespace INFOIBV
         }
 
         //Assignment 2 functionality
-        private Tuple<int, int>[] convertInputToTuples()
+        private Tuple<int, int>[] convertInputToTuplesBinary()
         {
             String allCoordinates = richTextBox1.Text;
             String[] coordinatePairs = allCoordinates.Split(' ');
@@ -311,37 +308,95 @@ namespace INFOIBV
             return coordinateTupleArray;
         }
 
-        private Color[,] conversionGeodesicErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        private Tuple<int, int,int>[] convertInputToTuplesGrayscale()
         {
-                return conversionMax(conversionErosion(image, kernel, isBinary), checkImage);
+            String allCoordinates = richTextBox1.Text;
+            String[] coordinatePairs = allCoordinates.Split(' ');
+            Tuple<int, int,int>[] coordinateTupleArray = new Tuple<int, int,int>[coordinatePairs.Length];
+            for (int x = 0; x < coordinatePairs.Length; x++)
+            {
+                String[] coordinates = coordinatePairs[x].Split(',');
+                int xCoordinate = Convert.ToInt16(coordinates[0]);
+                int yCoordinate = Convert.ToInt16(coordinates[1]);
+                int weight = Convert.ToInt16(coordinates[2]);
+                coordinateTupleArray[x] = Tuple.Create(xCoordinate, yCoordinate, weight);
+                Console.WriteLine("X: " + xCoordinate + " Y: " + yCoordinate + " weight: " + weight);
+            }
+            return coordinateTupleArray;
         }
 
-        private Color[,] conversionGeodesicDilation(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary, Color[,] checkImage)
+        private Color[,] conversionGeodesicErosion(Color[,] image, Boolean isBinary, Color[,] checkImage)
         {
-            return conversionMin(conversionDilation(image, kernel, isBinary), checkImage);
+
+                return conversionMax(conversionErosion(image, isBinary), checkImage);
         }
-        private Color[,] conversionErosion(Color[,] image, Tuple<int, int>[] kernel, Boolean isBinary)
+
+        private Color[,] conversionGeodesicDilation(Color[,] image, Boolean isBinary, Color[,] checkImage)
+        {
+            return conversionMin(conversionDilation(image, isBinary), checkImage);
+        }
+
+        private Color[,] conversionErosion(Color[,] image, Boolean isBinary)
         {
             if (isBinary)
             {
-                return conversionErosionBinary(image, kernel);
+                try
+                {
+                    Tuple<int, int>[] kernel = convertInputToTuplesBinary();
+                    return conversionErosionBinary(image, kernel);
+                }
+                catch
+                {
+                    System.Windows.Forms.MessageBox.Show("Did you input a correct filter?");
+                }
+                
             }
             else
             {
-                return conversionErosionGrayscale(image, kernel);
+                try
+                {
+                    Tuple<int, int,int>[] kernel = convertInputToTuplesGrayscale();
+                    return conversionErosionGrayscale(image, kernel);
+                }
+                catch
+                {
+                    System.Windows.Forms.MessageBox.Show("Did you input a correct filter?");
+                }
             }
+
+            return null;
         }
 
-        private Color[,] conversionDilation(Color[,]image, Tuple<int, int>[] kernel, Boolean isBinary)
+        private Color[,] conversionDilation(Color[,]image, Boolean isBinary)
         {
             if (isBinary)
             {
-                return conversionDilationBinary(image, kernel);
+                try
+                {
+                    Tuple<int, int>[] kernel = convertInputToTuplesBinary();
+                    return conversionDilationBinary(image, kernel);
+                }
+                catch (Exception E)
+                {
+                    System.Windows.Forms.MessageBox.Show("Did you input a correct filter?");
+                    Console.WriteLine(E.Message);
+                }
             }
             else
             {
-                return conversionDilationGrayscale(image, kernel);
+                try
+                {
+                    Tuple<int,int,int>[] kernel = convertInputToTuplesGrayscale();
+                    return conversionDilationGrayscale(image, kernel);
+                }
+                catch(Exception E)
+                {
+                    System.Windows.Forms.MessageBox.Show("Did you input a correct filter?");
+                    Console.WriteLine(E.Message);
+                }
             }
+
+            return null;
         }
 
         private Color[,] makeBinaryImage()
@@ -423,7 +478,7 @@ namespace INFOIBV
             return newImage;
         }
 
-        private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        private Color[,] conversionErosionGrayscale(Color[,] image, Tuple<int, int, int>[] kernel)
         {
             Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
             for (int x = 0; x < InputImage.Size.Width; x++)
@@ -439,18 +494,22 @@ namespace INFOIBV
                         if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
                             structureX > (InputImage.Size.Width - 1 )))
                         {
-                                valueList.Add(image[structureX, structureY].R);
+                                valueList.Add(image[structureX, structureY].R - kernel[structureIndex].Item3);
                         }
                     }
 
                     int newColor = getMinimumValue(valueList);
+                    if (newColor < 0)
+                    {
+                        newColor = 0;
+                    }
                     newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
                 }
             }
             return newImage;
         }
 
-        private Color[,] conversionDilationGrayscale(Color[,] image, Tuple<int, int>[] kernel)
+        private Color[,] conversionDilationGrayscale(Color[,] image, Tuple<int, int, int>[] kernel)
         {
             Color[,] newImage = new Color[InputImage.Size.Width, InputImage.Size.Height];
             for (int x = 0; x < InputImage.Size.Width; x++)
@@ -466,11 +525,15 @@ namespace INFOIBV
                         if (!(structureX < 0 || structureY < 0 || structureY > (InputImage.Size.Height - 1) ||
                               structureX > (InputImage.Size.Width - 1)))
                         {
-                            valueList.Add(image[structureX, structureY].R);
+                            valueList.Add(image[structureX, structureY].R + kernel[structureIndex].Item3);
                         }
                     }
 
                     int newColor = getMaximumValue(valueList);
+                    if (newColor > 255)
+                    {
+                        newColor = 255;
+                    }
                     newImage[x, y] = Color.FromArgb(newColor, newColor, newColor);
                 }
             }
@@ -1257,6 +1320,21 @@ namespace INFOIBV
                 checkBox1.Visible = false;
             }
 
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Visible)
+            {
+                if (checkBox1.Checked)
+                {
+                    label1.Text = "Enter the structuring element. Example: 0,0 1,0 x,y ";
+                }
+                else
+                {
+                    label1.Text = "Enter the structuring element and the weight. Example: 0,0,2 1,0,0 x,y,w";
+                }
+            }
         }
     }
 }
