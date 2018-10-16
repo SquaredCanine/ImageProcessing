@@ -176,6 +176,9 @@ namespace INFOIBV
                 case "boundary trace":
                     Image = conversionBoundary(Image);
                     break;
+                case "fourier descriptor":
+                    Image = conversionFourier(Image);
+                    break;
                 case "greyscale":
                     Image = conversionGrayscale(Image);
                     break;
@@ -239,7 +242,7 @@ namespace INFOIBV
 
             int n = borderPoints.Length;
             Tuple<int, int>[] output = new Tuple<int, int>[n];
-            Complex[] complexList = tupleToComplexList(borderPoints);
+            Complex[] complexList = tupleToComplexArray(borderPoints);
 
             for(int k = 0; k < n; k++)        //loops the output elements
             {
@@ -247,7 +250,7 @@ namespace INFOIBV
 
                 for(int j = 0; j < n; j++)     //loops the input elements
                 {
-                    double exponent = (2 * Math.PI * j * k) / n;                  // calculating the exponent
+                    double exponent = 2 * Math.PI * j * k / n;                  // calculating the exponent
                     pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
 
@@ -257,7 +260,7 @@ namespace INFOIBV
             return output;
         }
 
-        private Complex[] tupleToComplexList(Tuple<int, int>[] list)
+        private Complex[] tupleToComplexArray(Tuple<int, int>[] list)
         {
             Complex[] output = new Complex[list.Length];
             int i = 0;
@@ -469,7 +472,7 @@ namespace INFOIBV
             List<Tuple<int, int>> listofThings =
                 getShapeCoordinates(image, startPointx, startPointy);
 
-            Tuple<int, int>[] arrayList = createFourierDescriptor(listofThings.ToArray());
+            Tuple<int, int>[] arrayList = listofThings.ToArray();
             foreach (Tuple<int, int> elem in arrayList)
             {
                 try
@@ -482,6 +485,45 @@ namespace INFOIBV
                 }
             }
 
+            return newImage;
+        }
+
+        private Tuple<int,int> getCentroid (Tuple<int,int>[] array)
+        {
+            int sumx = 0;
+            int sumy = 0;
+            int n = array.Length;
+            foreach(Tuple<int,int> elem in array)
+            {
+                sumx += elem.Item1;
+                sumy += elem.Item2;
+            }
+            
+            return new Tuple<int, int>(sumx / n, sumy / n);
+        }
+
+        private Color[,] conversionFourier(Color[,] image)
+        {
+            int startx = getStartPoint(image).Item1;
+            int starty = getStartPoint(image).Item2;
+            Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
+            Tuple<int, int> centroid = getCentroid(shapeCoordinateArray);
+            
+            Tuple<int, int>[] fourierCoordinateArray = createFourierDescriptor(shapeCoordinateArray);
+
+            Color[,] newImage = makeBinaryImage();
+
+            foreach (Tuple<int, int> elem in fourierCoordinateArray)
+            {
+                try
+                {
+                    newImage[centroid.Item1+ elem.Item1, centroid.Item2 + elem.Item2] = Color.FromArgb(57, 255, 20);
+                }
+                catch
+                {
+                    Console.Write("Whoops");
+                }
+            }
             return newImage;
         }
 
@@ -513,8 +555,7 @@ namespace INFOIBV
         {new Tuple<int, int>(-1, -1), new Tuple<int, int>(0, -1), new Tuple<int, int>(1, -1),
             new Tuple<int, int>(1,0), new Tuple<int, int>(1,1), new Tuple<int, int>(0,1),
             new Tuple<int, int>(-1,1), new Tuple<int, int>(-1,0)};
-
-
+        
         private int getNextPoint(Color[,] image, int currentX, int currentY, int dir)
         {
             for(int y = 0; y < clockwiseRotation.Length; y++)
@@ -544,8 +585,7 @@ namespace INFOIBV
 
             return 8;
         }
-
-
+        
         private Tuple<int, int> getStartPoint(Color[,] image)
         {
             for (int x = 0; x < InputImage.Size.Width; x++)
@@ -561,8 +601,7 @@ namespace INFOIBV
 
             return null;
         }
-
-
+        
         private int getMinimumValue(List<int> valueList)
         {
             int lowValue = 255;

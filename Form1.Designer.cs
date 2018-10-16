@@ -154,7 +154,8 @@
             "min",
             "max",
             "value counting",
-            "boundary trace"});
+            "boundary trace",
+            "fourier descriptor"});
             this.comboBox1.Location = new System.Drawing.Point(688, 17);
             this.comboBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.comboBox1.Name = "comboBox1";
