@@ -239,7 +239,6 @@ namespace INFOIBV
         //Returns the fourier shape descriptor for a given set of points
         private Tuple<int, int>[] createFourierDescriptor(Tuple<int, int>[] borderPoints)
         {
-
             int n = borderPoints.Length;
             Tuple<int, int>[] output = new Tuple<int, int>[n];
             Complex[] complexList = tupleToComplexArray(borderPoints);
@@ -254,7 +253,29 @@ namespace INFOIBV
                     pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
 
-                output[k] = new Tuple<int,int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
+                output[k] = new Tuple<int,int>((int) (pt.Real/n), (int) (pt.Imaginary/n));  //converting back from complex to int tuples
+            }
+
+            return output;
+        }
+
+        private Tuple<int, int>[] inverseDFT(Tuple<int, int>[] complexCoefficients, int accuracy)
+        {
+            int n = complexCoefficients.Length;
+            Tuple<int, int>[] output = new Tuple<int, int>[n];
+            Complex[] complexList = tupleToComplexArray(complexCoefficients);
+
+            for (int k = 0; k < accuracy; k++)        //loops the output elements
+            {
+                Complex pt = 0;
+
+                for (int j = 0; j < n; j++)     //loops the input elements
+                {
+                    double exponent = 2 * Math.PI * j * (k-accuracy/2) / accuracy;                  // calculating the exponent
+                    pt += complexList[j] * Complex.Exp(new Complex(1, exponent)); //applying the exponential function
+                }
+
+                output[k] = new Tuple<int, int>((int) pt.Real, (int) pt.Imaginary);  //converting back from complex to int tuples
             }
 
             return output;
@@ -509,15 +530,15 @@ namespace INFOIBV
             Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
             Tuple<int, int> centroid = getCentroid(shapeCoordinateArray);
             
-            Tuple<int, int>[] fourierCoordinateArray = createFourierDescriptor(shapeCoordinateArray);
-
+            Tuple<int, int>[] fourierCoefficientArray = createFourierDescriptor(shapeCoordinateArray);
+            Tuple<int, int>[] reconstructed = inverseDFT(fourierCoefficientArray, 20);
             Color[,] newImage = makeBinaryImage();
 
-            foreach (Tuple<int, int> elem in fourierCoordinateArray)
+            foreach (Tuple<int, int> elem in reconstructed)
             {
                 try
                 {
-                    newImage[centroid.Item1+ elem.Item1, centroid.Item2 + elem.Item2] = Color.FromArgb(57, 255, 20);
+                    newImage[centroid.Item1 + elem.Item1, centroid.Item2 + elem.Item2] = Color.FromArgb(57, 255, 20);
                 }
                 catch
                 {
@@ -525,6 +546,18 @@ namespace INFOIBV
                 }
             }
             return newImage;
+        }
+
+        private Tuple<int, int>[] complexToTupleArray(Complex[] array)
+        {
+            Tuple<int, int>[] output = new Tuple<int, int>[array.Length];
+            int i = 0;
+            foreach(Complex elem in array)
+            {
+                output[i] = new Tuple<int, int>((int) elem.Real, (int) elem.Imaginary);
+                i++;
+            }
+            return output;
         }
 
         private List<Tuple<int, int>> getShapeCoordinates(Color[,] image, int startx, int starty)
