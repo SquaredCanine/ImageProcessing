@@ -259,34 +259,6 @@ namespace INFOIBV
 
             return output;
         }
-        private Tuple<int,int>[] computeDft(double[] inreal, double[] inimag)
-        {
-            double[] outreal = new double[inreal.Length];
-            double[] outimag = new double[inimag.Length];
-            int n = inreal.Length;
-            for (int k = 0; k < n; k++)
-            {  // For each output element
-                double sumreal = 0;
-                double sumimag = 0;
-                for (int t = 0; t < n; t++)
-                {  // For each input element
-                    double angle = 2 * Math.PI * t * k / n;
-                    sumreal += inreal[t] * Math.Cos(angle) + inimag[t] * Math.Sin(angle);
-                    sumimag += -inreal[t] * Math.Sin(angle) + inimag[t] * Math.Cos(angle);
-                }
-                outreal[k] = sumreal;
-                outimag[k] = sumimag;
-            }
-
-            Tuple<int, int>[] output = new Tuple<int, int>[inreal.Length];
-            for (int i = 0; i< outreal.Length; i++)
-            {
-                Tuple<int, int> tuple = new Tuple<int, int>((int)outreal[i], (int)outimag[i]);
-                output[i] = tuple;
-            }
-
-            return output;
-        }
 
         private Complex[] tupleToComplexArray(Tuple<int, int>[] list)
         {
@@ -536,20 +508,8 @@ namespace INFOIBV
             int starty = getStartPoint(image).Item2;
             Tuple<int,int>[] shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
             Tuple<int, int> centroid = getCentroid(shapeCoordinateArray);
-
-            double[] reals = new double[shapeCoordinateArray.Length];
-            double[] imags = new double[shapeCoordinateArray.Length];
             
-            int i = 0;
-
-            foreach (Tuple<int,int> elem in shapeCoordinateArray)
-            {
-                reals[i] = elem.Item1;
-                imags[i] = elem.Item2;
-                i++;
-            }
-
-            Tuple<int, int>[] fourierCoordinateArray = computeDft(reals, imags);
+            Tuple<int, int>[] fourierCoordinateArray = createFourierDescriptor(shapeCoordinateArray);
 
             Color[,] newImage = makeBinaryImage();
 
