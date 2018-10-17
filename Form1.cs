@@ -409,8 +409,18 @@ namespace INFOIBV
             var startx = getStartPoint(image).Item1;
             var starty = getStartPoint(image).Item2;
             var shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
+            var decimatedList = new List<Tuple<int, int>>();
 
-            var fourierCoefficientArray = createFourierDescriptor(shapeCoordinateArray);
+            int index = 0;
+            foreach (var elem in shapeCoordinateArray)
+            {
+                if (index % 25 == 0)
+                {
+                    decimatedList.Add(elem);
+                }
+                index++;
+            }
+            var fourierCoefficientArray = createFourierDescriptor(decimatedList.ToArray());
 
             foreach (var value in fourierCoefficientArray) Console.WriteLine(value);
 
