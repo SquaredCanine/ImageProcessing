@@ -411,9 +411,16 @@ namespace INFOIBV
             var shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
 
             var fourierCoefficientArray = createFourierDescriptor(shapeCoordinateArray);
-
-            foreach (var value in fourierCoefficientArray) Console.WriteLine(value);
-
+            var counter = 0;
+            foreach (var value in fourierCoefficientArray)
+            {
+                if (value.Item1 > 0.01 && value.Item2 > 0.01)
+                {
+                    Console.Write(counter + " ");
+                    Console.WriteLine(value);
+                }
+                counter++;
+            }
             var newImage = makeBinaryImage();
             return newImage;
         }
