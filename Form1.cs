@@ -410,15 +410,32 @@ namespace INFOIBV
             var starty = getStartPoint(image).Item2;
             var shapeCoordinateArray = getShapeCoordinates(image, startx, starty).ToArray();
 
-            var fourierCoefficientArray = createFourierDescriptor(shapeCoordinateArray);
+            var decimatedList = new List<Tuple<int, int>>();
+
+            int index = 0;
+            foreach (var elem in shapeCoordinateArray)
+            {
+                if (index % 1 == 0)
+                {
+                    decimatedList.Add(elem);
+                }
+                index++;
+            }
+            var fourierCoefficientArray = createFourierDescriptor(decimatedList.ToArray());
+
             var counter = 0;
             foreach (var value in fourierCoefficientArray)
             {
-                if (value.Item1 > 0.01 && value.Item2 > 0.01)
-                {
-                    Console.Write(counter + " ");
-                    Console.WriteLine(value);
-                }
+                //Console.Write(counter + " ");
+                Console.WriteLine(value.Item1);
+                counter++;
+            }
+            counter = 0;
+            Console.WriteLine("eleGiggle");
+            foreach (var value in fourierCoefficientArray)
+            {
+                //Console.Write(counter + " ");
+                Console.WriteLine(value.Item2);
                 counter++;
             }
             var newImage = makeBinaryImage();
