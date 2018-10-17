@@ -246,7 +246,7 @@ namespace INFOIBV
 
                 for(int j = 0; j < n; j++)     //loops the input elements
                 {
-                    double exponent = 2 * Math.PI * j * k / n;                  // calculating the exponent
+                    double exponent = 2 * Math.PI * k * j / n;                  // calculating the exponent
                     pt += complexList[j] * Complex.Exp(new Complex(0, -exponent)); //applying the exponential function
                 }
 
@@ -256,29 +256,7 @@ namespace INFOIBV
 
             return output;
         }
-
-        private Tuple<int, int>[] inverseDFT(Tuple<int, int>[] complexCoefficients, int accuracy)
-        {
-            int n = complexCoefficients.Length;
-            Tuple<int, int>[] output = new Tuple<int, int>[n];
-            Complex[] complexList = tupleToComplexArray(complexCoefficients);
-
-            for (int k = 0; k < accuracy; k++)        //loops the output elements
-            {
-                Complex pt = 0;
-
-                for (int j = 0; j < n; j++)     //loops the input elements
-                {
-                    double exponent = 2 * Math.PI * j * (k-accuracy/2) / accuracy;                  // calculating the exponent
-                    pt += complexList[j] * Complex.Exp(new Complex(1, exponent)); //applying the exponential function
-                }
-
-                output[k] = new Tuple<int, int>((int) pt.Real, (int) pt.Imaginary);               //converting back from complex to int tuples
-            }
-
-            return output;
-        }
-
+       
         private Complex[] tupleToComplexArray(Tuple<int, int>[] list)
         {
             Complex[] output = new Complex[list.Length];
