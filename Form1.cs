@@ -415,7 +415,7 @@ namespace INFOIBV
             int index = 0;
             foreach (var elem in shapeCoordinateArray)
             {
-                if (index % 1 == 0)
+                if (index % 25 == 0)
                 {
                     decimatedList.Add(elem);
                 }
