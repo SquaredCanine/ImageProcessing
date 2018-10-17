@@ -632,7 +632,6 @@ namespace INFOIBV
 
                 output[k] = new Tuple<double, double>(pt.Real / n,
                     pt.Imaginary / n); //converting back from complex to int tuples
-                Console.WriteLine(output[k]);
             }
 
             return output;
